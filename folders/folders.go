@@ -9,31 +9,34 @@ import (
 //
 // TODO:
 //
-//		[ ] vars 'err', 'f1', 'fs' are declared but unused, these are 'redeclared' as f, fp and err is not handled
-//		[ ] 'k' and 'k1' unused in for loops -> remove definition
-//		[ ] does not handle errors that could be returned by func FetchAllFoldersByOrgID
-//	    [x] add white sppace (\n) between sections of the function for readability
+// [x] vars 'err', 'f1', 'fs' are declared but unused, remove the latter 2
+// [x] 'k' and 'k1' unused in for loops -> remove
+// [x] does not handle errors that could be returned by func FetchAllFoldersByOrgID
+// [x] add white sppace (\n) between sections of the function for readability
+// [x] merge variable declarations with assignments and
+// [x] make var names more descriptive
+// [x] 2nd for loop causing the same folder to be appended: address to v1 appended, but v1 updates so pointer does too
+//
+//	https://medium.com/swlh/use-pointer-of-for-range-loop-variable-in-go-3d3481f7ffc9
 func GetAllFolders(req *FetchFolderRequest) (*FetchFolderResponse, error) {
-	var (
-		err error
-		f1  Folder
-		fs  []*Folder
-	)
-
-	f := []Folder{}
-	r, _ := FetchAllFoldersByOrgID(req.OrgID)
-	for k, v := range r {
-		f = append(f, *v)
+	folders := []Folder{}
+	foldersByOrgIdRes, err := FetchAllFoldersByOrgID(req.OrgID)
+	if err != nil {
+		return &FetchFolderResponse{}, err
 	}
 
-	var fp []*Folder
-	for k1, v1 := range f {
-		fp = append(fp, &v1)
+	for _, f := range foldersByOrgIdRes {
+		folders = append(folders, *f)
 	}
 
-	var ffr *FetchFolderResponse
-	ffr = &FetchFolderResponse{Folders: fp}
-	return ffr, nil
+	var foldersPointers []*Folder
+	for _, f := range folders {
+		folder := f
+		foldersPointers = append(foldersPointers, &folder)
+	}
+
+	var fetchFolderResponse *FetchFolderResponse = &FetchFolderResponse{Folders: foldersPointers}
+	return fetchFolderResponse, nil
 }
 
 // FetchAllFoldersByOrdId filters a list of folders by the organisation
@@ -45,7 +48,7 @@ func GetAllFolders(req *FetchFolderRequest) (*FetchFolderResponse, error) {
 // TODO:
 //
 //	[ ] Does not appear to handle errors and returns 'nil' in all cases.
-//	[ ] Look into common practices when returning errors
+//	[ ] Look into common practices when returning errors and apply
 func FetchAllFoldersByOrgID(orgID uuid.UUID) ([]*Folder, error) {
 	folders := GetSampleData()
 

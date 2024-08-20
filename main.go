@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// obtain and print the default organisation's folders
-// if any errors are encointered, log them
+// obtains and print the default organisation's folders
+// if any errors are encointered, logs them
 func main() {
 	req := &folders.FetchFolderRequest{
 		OrgID: uuid.FromStringOrNil(folders.DefaultOrgID),
