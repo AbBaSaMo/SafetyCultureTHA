@@ -61,6 +61,7 @@ func PrettyPrint(b interface{}) {
 	fmt.Print(string(s))
 }
 
+// returns the contents of sample.json
 func GetSampleData() []*Folder {
 	_, filename, _, _ := runtime.Caller(0)
 	fmt.Println(filename)
