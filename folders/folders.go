@@ -13,7 +13,7 @@ import (
 // [x] 'k' and 'k1' unused in for loops -> remove
 // [x] does not handle errors that could be returned by func FetchAllFoldersByOrgID
 // [x] add white sppace (\n) between sections of the function for readability
-// [x] merge variable declarations with assignments and
+// [x] merge variable declarations with assignments
 // [x] make var names more descriptive
 // [x] 2nd for loop causing the same folder to be appended: address to v1 appended, but v1 updates so pointer does too
 //
@@ -22,7 +22,7 @@ func GetAllFolders(req *FetchFolderRequest) (*FetchFolderResponse, error) {
 	folders := []Folder{}
 	foldersByOrgIdRes, err := FetchAllFoldersByOrgID(req.OrgID)
 	if err != nil {
-		return &FetchFolderResponse{}, err
+		return nil, err
 	}
 
 	for _, f := range foldersByOrgIdRes {
@@ -44,11 +44,6 @@ func GetAllFolders(req *FetchFolderRequest) (*FetchFolderResponse, error) {
 // and information regarding any potential errors.
 //
 // List of folders is obtained from sample.json through GetSampleData call.
-//
-// TODO:
-//
-//	[ ] Does not appear to handle errors and returns 'nil' in all cases.
-//	[ ] Look into common practices when returning errors and apply
 func FetchAllFoldersByOrgID(orgID uuid.UUID) ([]*Folder, error) {
 	folders := GetSampleData()
 
