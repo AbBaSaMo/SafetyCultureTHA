@@ -4,6 +4,11 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// TODO:
+//
+//		[ ] vars 'err', 'f1', 'fs' are declared but unused,
+//		[ ] 'k' and 'k1' unused in for loops
+//	 [ ] does not handle errors that could be returned by func FetchAllFoldersByOrgID
 func GetAllFolders(req *FetchFolderRequest) (*FetchFolderResponse, error) {
 	var (
 		err error
@@ -24,6 +29,13 @@ func GetAllFolders(req *FetchFolderRequest) (*FetchFolderResponse, error) {
 	return ffr, nil
 }
 
+// FetchAllFoldersByOrdId filters a list of folders by the organisation
+// who owns them and returns an array of Folders owned by such organisation
+// and information regarding any potential errors.
+// TODO:
+//
+//	[ ] Does not appear to handle errors and returns 'nil' in all cases.
+//	[ ] Look into common practices when returning errors
 func FetchAllFoldersByOrgID(orgID uuid.UUID) ([]*Folder, error) {
 	folders := GetSampleData()
 
