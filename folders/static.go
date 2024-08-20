@@ -64,11 +64,11 @@ func PrettyPrint(b interface{}) {
 // returns the contents of sample.json
 func GetSampleData() []*Folder {
 	_, filename, _, _ := runtime.Caller(0)
-	fmt.Println(filename)
+	// fmt.Println(filename)
 	basePath := filepath.Dir(filename)
 	filePath := filepath.Join(basePath, "sample.json")
 
-	fmt.Println(filePath)
+	// fmt.Println(filePath)
 
 	file, err := os.Open(filePath)
 	if err != nil {
