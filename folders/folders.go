@@ -1,6 +1,8 @@
 package folders
 
 import (
+	"errors"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -19,6 +21,10 @@ import (
 //
 //	https://medium.com/swlh/use-pointer-of-for-range-loop-variable-in-go-3d3481f7ffc9
 func GetAllFolders(req *FetchFolderRequest) (*FetchFolderResponse, error) {
+	if req == nil {
+		return nil, errors.New("empty request")
+	}
+
 	folders := []Folder{}
 	foldersByOrgIdRes, err := FetchAllFoldersByOrgID(req.OrgID)
 	if err != nil {
@@ -44,7 +50,14 @@ func GetAllFolders(req *FetchFolderRequest) (*FetchFolderResponse, error) {
 // and information regarding any potential errors.
 //
 // List of folders is obtained from sample.json through GetSampleData call.
+//
+// TODO:
+//
+// [x] handle nil orgID
 func FetchAllFoldersByOrgID(orgID uuid.UUID) ([]*Folder, error) {
+	if orgID == uuid.Nil {
+		return nil, errors.New("orgID is nil")
+	}
 	folders := GetSampleData()
 
 	resFolder := []*Folder{}
