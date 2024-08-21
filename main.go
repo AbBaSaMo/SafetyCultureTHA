@@ -22,7 +22,7 @@ func main() {
 
 	// folders.PrettyPrint(res)
 
-	res, err := folders.GetFoldersByPage(req, 690, 2)
+	res, err := folders.GetFoldersByPage(req, 5, 0)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return

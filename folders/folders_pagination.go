@@ -15,12 +15,10 @@ type PaginatedFetchFolderResponse struct {
 	NextOffset string
 }
 
-
-// TODO
 // Returns chunkSize number of folders from the list of an organisations folders given an
 // offset from the start of the list where offset starts from 0.
 func GetFoldersByPage(req *FetchFolderRequest, chunkSize int, offset int) (*PaginatedFetchFolderResponse, error) {
-	foldersByOrgIdRes, err := FetchAllOrgIDFoldersPaginated(req.OrgID, chunkSize)
+	foldersByOrgIdRes, err := FetchAllOrgIDFoldersPaginated(req.OrgID, &chunkSize)
 	if err != nil {
 		return nil, err
 	}
@@ -50,35 +48,34 @@ func GetFoldersByPage(req *FetchFolderRequest, chunkSize int, offset int) (*Pagi
 
 // Fetch all folders for a given OrgId and split them into chunks as defined by the chunk size.
 // If folders cannot evenly be split by chunk, the remainder at the end is grouped as it's own chunk.
-func FetchAllOrgIDFoldersPaginated(orgID uuid.UUID, chunkSize int) ([][]*Folder, error) {
-	folders := GetSampleData()
+func FetchAllOrgIDFoldersPaginated(orgID uuid.UUID, chunkSize *int) ([][]*Folder, error) {
+	allFolders := GetSampleData()
 
-	// obtain all folders by id
 	orgFolder := []*Folder{}
-	for _, folder := range folders {
+	for _, folder := range allFolders {
 		if folder.OrgId == orgID {
 			orgFolder = append(orgFolder, folder)
 		}
 	}
 
-	if chunkSize > len(orgFolder) { // todo
-		chunkSize = len(orgFolder)
+	if *chunkSize > len(orgFolder) {
+		*chunkSize = len(orgFolder)
 	}
 
 	// split into even chunks
-	numChunks := len(orgFolder)/chunkSize
+	numChunks := len(orgFolder)/(*chunkSize)
 	paginatedFolders := [][]*Folder{}
 
 	for i:=0; i < numChunks; i++ {
-		start := i*chunkSize
-		end   := start + chunkSize
+		start := i*(*chunkSize)
+		end   := start + (*chunkSize)
 		chunk := orgFolder[start: end]
 
 		paginatedFolders = append(paginatedFolders, chunk)
 	}
 
 	// append any remainder in separate chunk
-	rem := len(orgFolder)%chunkSize
+	rem := len(orgFolder)%(*chunkSize)
 	if rem > 0 {
 		start := len(orgFolder) - rem
 		lastChunk := orgFolder[start:len(orgFolder)]
