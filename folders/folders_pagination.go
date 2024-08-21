@@ -1,45 +1,56 @@
 package folders
 
 import (
-	// "fmt"
+	"errors"
+	"strconv"
 	"github.com/gofrs/uuid"
 )
 
 type PaginatedFetchFolderResponse struct {
 	Folders []*Folder
-	// number of folders in Folders
-	ChunkSize int
-	// given the Limit, the offset from first chunk to obtain the
-	// set of folders subsequent to this set
-	NextOffset int
+	// number of folders in the Folders field
+	ChunkSize string
+	// given the ChunkSize, the offset from first chunk to obtain the
+	// set of folders subsequent to this current one
+	NextOffset string
 }
 
 
 // TODO
-// Returns a chunk of data as defined by 
-// func GetAllFoldersPaginated(req *FetchFolderRequest, chunkSize int, offset int) (*PaginatedFetchFolderResponse, error) {
-// 	foldersByOrgIdRes, err := FetchAllFoldersByOrgIDPaginated(req.OrgID, chunkSize)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+// Returns chunkSize number of folders from the list of an organisations folders given an
+// offset from the start of the list where offset starts from 0.
+func GetFoldersByPage(req *FetchFolderRequest, chunkSize int, offset int) (*PaginatedFetchFolderResponse, error) {
+	foldersByOrgIdRes, err := FetchAllOrgIDFoldersPaginated(req.OrgID, chunkSize)
+	if err != nil {
+		return nil, err
+	}
 
-// 	// fetch the chunk we want
-// 	PrettyPrint(foldersByOrgIdRes)
+	if offset > len(foldersByOrgIdRes) - 1 {
+		return nil, errors.New("offset exceeds number of pages")
+	}
 
+	var foldersPointers []*Folder
+	for _, f := range foldersByOrgIdRes[offset] {
+		folder := f
+		foldersPointers = append(foldersPointers, folder)
+	}
 
-// 	// prep return
+	var nextOffset string
+	if offset < len(foldersByOrgIdRes)-1 {
+		nextOffset = strconv.Itoa(offset + 1)
+	}
 
-// 	var fetchFolderResponse *PaginatedFetchFolderResponse = &PaginatedFetchFolderResponse {
-// 		Folders: []*Folder{}, 
-// 		ChunkSize: chunkSize, 
-// 		NextOffset: offset + 1, // need to modulo with size of it all
-// 	}
-// 	return fetchFolderResponse, nil
-// }
+	var fetchFolderResponse *PaginatedFetchFolderResponse = &PaginatedFetchFolderResponse {
+		Folders: foldersPointers, 
+		ChunkSize: strconv.Itoa(chunkSize), 
+		NextOffset: nextOffset,
+	}
+	return fetchFolderResponse, nil
+}
 
 // Fetch all folders for a given OrgId and split them into chunks as defined by the chunk size.
 // If folders cannot evenly be split by chunk, the remainder at the end is grouped as it's own chunk.
-func FetchAllFoldersByOrgIDPaginated(orgID uuid.UUID, chunkSize int) ([][]*Folder, error) {
+func FetchAllOrgIDFoldersPaginated(orgID uuid.UUID, chunkSize int) ([][]*Folder, error) {
 	folders := GetSampleData()
 
 	// obtain all folders by id
@@ -48,6 +59,10 @@ func FetchAllFoldersByOrgIDPaginated(orgID uuid.UUID, chunkSize int) ([][]*Folde
 		if folder.OrgId == orgID {
 			orgFolder = append(orgFolder, folder)
 		}
+	}
+
+	if chunkSize > len(orgFolder) { // todo
+		chunkSize = len(orgFolder)
 	}
 
 	// split into even chunks
