@@ -14,7 +14,15 @@ func main() {
 		OrgID: uuid.FromStringOrNil(folders.DefaultOrgID),
 	}
 
-	res, err := folders.GetAllFolders(req)
+	// res, err := folders.GetAllFolders(req)
+	// if err != nil {
+	// 	fmt.Printf("%v", err)
+	// 	return
+	// }
+
+	// folders.PrettyPrint(res)
+
+	res, err := folders.FetchAllFoldersByOrgIDChunks(req.OrgID, 4)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
