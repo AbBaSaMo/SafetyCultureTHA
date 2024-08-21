@@ -3,8 +3,18 @@ package folders
 import (
 	"errors"
 	"strconv"
+
 	"github.com/gofrs/uuid"
 )
+
+/* Explanation of solution:
+
+    - Kept the implementation simple: filtered folders by organisation ID, split evenly into an array of
+	  pages/chunks and then returned the sought after page using the index it is located at in the array.
+    - Allows function to accept any page/chunk size and offset for caller to paginate according to needs.
+    - Error and edge case handling includes out of bounts offset, as well as capping page/chunk size to the
+	  length of the organisations total folders if a caller seeks more than is available.
+*/
 
 type PaginatedFetchFolderResponse struct {
 	Folders []*Folder
@@ -23,7 +33,7 @@ func GetFoldersByPage(req *FetchFolderRequest, chunkSize int, offset int) (*Pagi
 		return nil, err
 	}
 
-	if offset > len(foldersByOrgIdRes) - 1 {
+	if offset > len(foldersByOrgIdRes)-1 {
 		return nil, errors.New("offset exceeds number of pages")
 	}
 
@@ -38,9 +48,9 @@ func GetFoldersByPage(req *FetchFolderRequest, chunkSize int, offset int) (*Pagi
 		nextOffset = strconv.Itoa(offset + 1)
 	}
 
-	var fetchFolderResponse *PaginatedFetchFolderResponse = &PaginatedFetchFolderResponse {
-		Folders: foldersPointers, 
-		ChunkSize: strconv.Itoa(chunkSize), 
+	var fetchFolderResponse *PaginatedFetchFolderResponse = &PaginatedFetchFolderResponse{
+		Folders:    foldersPointers,
+		ChunkSize:  strconv.Itoa(chunkSize),
 		NextOffset: nextOffset,
 	}
 	return fetchFolderResponse, nil
@@ -63,19 +73,19 @@ func FetchAllOrgIDFoldersPaginated(orgID uuid.UUID, chunkSize *int) ([][]*Folder
 	}
 
 	// split into even chunks
-	numChunks := len(orgFolder)/(*chunkSize)
+	numChunks := len(orgFolder) / (*chunkSize)
 	paginatedFolders := [][]*Folder{}
 
-	for i:=0; i < numChunks; i++ {
-		start := i*(*chunkSize)
-		end   := start + (*chunkSize)
-		chunk := orgFolder[start: end]
+	for i := 0; i < numChunks; i++ {
+		start := i * (*chunkSize)
+		end := start + (*chunkSize)
+		chunk := orgFolder[start:end]
 
 		paginatedFolders = append(paginatedFolders, chunk)
 	}
 
 	// append any remainder in separate chunk
-	rem := len(orgFolder)%(*chunkSize)
+	rem := len(orgFolder) % (*chunkSize)
 	if rem > 0 {
 		start := len(orgFolder) - rem
 		lastChunk := orgFolder[start:len(orgFolder)]
